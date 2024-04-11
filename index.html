@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Speech Recognition Web App</title>
+<style>
+/* Add your CSS styles here */
+</style>
+</head>
+<body>
+<h1>Speech Recognition Web App</h1>
+<button id="start-btn">Start Listening</button>
+<p id="result"></p>
+<script>
+const startBtn = document.getElementById('start-btn');
+const resultText = document.getElementById('result');
+startBtn.addEventListener('click', () => {
+startListening();
+});
+function startListening() {
+const recognition = new webkitSpeechRecognition() || new SpeechRecognition();
+recognition.lang = 'ml-IN'; // Malayalam language code
+recognition.onstart = function() {
+resultText.textContent = 'Listening...';
+};
+recognition.onresult = function(event) {
+const transcript = event.results[0][0].transcript;
+resultText.textContent = 'You said: ' + transcript;
+sendToBackend(transcript);
+};
+recognition.onerror = function(event) {
+resultText.textContent = 'Error occurred in recognition: ' + event.error;
+};
+recognition.start();
+}
+function sendToBackend(transcript) {
+// Send transcript to backend for processing
+fetch('/recognize', {
+method: 'POST',
+headers: {
+'Content-Type': 'application/json'
+},
+body: JSON.stringify({ transcript: transcript })
+})
+.then(response => response.json())
+.then(data => {
+// Handle response from backend
+resultText.textContent = 'Backend Response: ' + data.message;
+})
+.catch(error => {
+console.error('Error sending data to backend:', error);
+});
+}
+</script>
+</body>
+</html>
